@@ -1,0 +1,52 @@
+version: "3.8"
+
+services:
+  litestar:
+    build: .
+    container_name: litestar
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    depends_on:
+      - postgres
+    environment:
+      - DATABASE_HOST=postgres
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=litestardb
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://litestar:8000/healthcheck"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - litestar-network
+
+  postgres:
+    image: postgres:14.3
+    container_name: litestar_postgres
+    environment:
+      - DATABASE_HOST=postgres
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=litestardb
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "admin", "-d", "litestardb"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - litestar-network
+
+volumes:
+  db-data:
+
+networks:
+  litestar-network:
+    driver: bridge
