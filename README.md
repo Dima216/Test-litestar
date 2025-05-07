@@ -11,4 +11,4 @@ docker compose exec -it litestar alembic upgrade head
 http://localhost:8000/schema/swagger
 
 # Ушло времени
-2 дня
+1,5 дня
